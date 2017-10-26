@@ -1,0 +1,109 @@
+<html>
+
+  <canvas id="gameCanvas" width="800" height="640"></canvas>
+
+  <script>
+    var canvas;
+    var canvasContext;
+    const PADDLE_WIDTH = 15;
+    const PADDLE_HEIGHT = 100;
+    const PADDLE_BUFFER = 2;
+    //player
+    var p = {"x":PADDLE_BUFFER, "y":270, "w":PADDLE_WIDTH, "h":PADDLE_HEIGHT, };
+    var e = {"x":783, "y":270, "w":PADDLE_WIDTH, "h":PADDLE_HEIGHT, };
+    var ball = {"x":400, "y":320, "r":12, "xs":2, "ys":2};
+
+    window.onload = function() {
+      var fps = 60;
+      canvas = document.getElementById('gameCanvas');
+      canvasContext = canvas.getContext('2d');
+      setInterval(function(){
+        update();
+        draw();
+      }, 1000/fps);
+
+      canvas.addEventListener('mousemove',
+        function(evt) {
+          var mousePos = calcMousePos(evt);
+          e.y = mousePos.y - (PADDLE_HEIGHT/2);
+        });
+    }
+
+    function update(){
+      ball.x = ball.x + ball.xs;
+      ball.y = ball.y + ball.ys;
+      //check left paddle and corners
+      if(ball.x <= PADDLE_WIDTH + p.x + ball.r)
+        if(ball.y - ball.r > p.y && ball.y + ball.r < p.y + PADDLE_HEIGHT){
+          ball.xs = -ball.xs;
+        }
+      //check right paddle and corners
+      if(ball.x > canvas.width - (PADDLE_WIDTH + PADDLE_BUFFER + ball.r))
+        if(ball.y - ball.r > e.y && ball.y + ball.r < e.y + PADDLE_HEIGHT){
+          ball.xs = -ball.xs;
+        }
+
+      //ball hits left side
+      if(ball.x < 0 + ball.r){
+        //ball.xs = -ball.xs;
+        // if(ball.y > p1.y && ball.y < p1.y + PADDLE_HEIGHT){
+        //   ball.xs = -ball.xs;
+        // }
+        // else
+          playerScore();
+      }
+      //ball hits right side
+      if(ball.x > canvas.width - ball.r) {
+        //ball.xs = -ball.xs;
+        playerScore();
+      }
+      //ball hits bottom
+      if(ball.y > canvas.height - ball.r)
+        ball.ys = -ball.ys;
+
+      //ball hits top
+      if(ball.y < 0 + ball.r)
+        ball.ys = -ball.ys;
+    }
+
+    function playerScore() {
+      ball.xs = -ball.xs;
+      ball.x = canvas.width/2;
+      ball.y = canvas.height/2;
+    }
+
+
+// DRAWING
+    function draw() {
+      canvasContext.fillStyle = 'black';
+      canvasContext.fillRect(0,0,canvas.width,canvas.height);
+      //player
+      drawPaddle(p.x, p.y, p.w, p.h, 'white');
+      //enemy
+      drawPaddle(canvas.width - (PADDLE_WIDTH + PADDLE_BUFFER), e.y, e.w, e.h, 'red');
+      //ball
+      drawBall(ball.x, ball.y, ball.r, 'white');
+    }
+
+    function drawPaddle(x, y, w, h, color) {
+      canvasContext.fillStyle = color;
+      canvasContext.fillRect(x, y, w, h);
+    }
+
+    function drawBall(x, y, r, color) {
+      canvasContext.fillStyle = color;
+      canvasContext.beginPath();
+      //pos-x, pos-y, radius, start drawing radians, 2pi gives full circle, which half to display
+      canvasContext.arc(x, y, r, 0, Math.PI*2, true);
+      canvasContext.fill();
+    }
+
+    function calcMousePos(evt) {
+      var rect = canvas.getBoundingClientRect();
+      var root = document.documentElement;
+      var mouseX = evt.clientX - rect.left - root.scrollLeft;
+      var mouseY = evt.clientY - rect.top - root.scrollLeft;
+      return {x:mouseX, y:mouseY};
+    }
+  </script>
+</html>
